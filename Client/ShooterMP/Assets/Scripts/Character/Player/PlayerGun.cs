@@ -1,56 +1,59 @@
-using System;
 using UnityEngine;
 
-public class PlayerGun : Gun
+namespace ShooterMP.Character.Player
 {
-    [SerializeField] private Transform _bulletSpawnPoint;
-    [SerializeField] private float _bulletSpeed = 20f;
-    [SerializeField, Min(1f)] private int _fireRateRPM = 400;
-    [SerializeField] private int _damage;
+    using ShooterMP.Gun;
     
-    private float _shootDelay;
-    private float _lastShootTime;
+    public class PlayerGun : Gun
+    {
+        private const float SecondsPerMinute = 60f;
+        
+        [SerializeField] private Transform _bulletSpawnPoint;
+        [SerializeField] private float _bulletSpeed = 20f;
+        [SerializeField, Min(1f)] private int _fireRateRPM = 400;
+        [SerializeField] private int _damage = 1;
+        
+        private float _shootDelay;
+        private float _lastShootTime;
 
-    private void Start()
-    {
-        UpdateShootDelay();
-    }
-    
-    private void OnValidate()
-    {
-        UpdateShootDelay();
-    }
+        private void Start()
+        {
+            UpdateShootDelay();
+        }
+        
+        private void OnValidate()
+        {
+            UpdateShootDelay();
+        }
 
-    private void UpdateShootDelay()
-    {
-        _shootDelay = 60f / _fireRateRPM;
-        
-        if (_fireRateRPM <= 0f)
-            _shootDelay = 0f;
-    }
+        private void UpdateShootDelay()
+        {
+            _shootDelay = SecondsPerMinute / _fireRateRPM;
+        }
 
-    public bool TryShoot(out ShootInfo info)
-    {
-        info = new ShootInfo();
-        
-        if (Time.time - _lastShootTime < _shootDelay)
-            return false;
-        
-        Vector3 position = _bulletSpawnPoint.position;
-        Vector3 velocity = _bulletSpawnPoint.forward * _bulletSpeed;
-        
-        _lastShootTime = Time.time;
-        Instantiate(BulletPrefab, position, Quaternion.identity).Initialize(velocity, _damage);
-        Shot?.Invoke();
-        
-        info.pX = position.x;
-        info.pY = position.y;
-        info.pZ = position.z;
-        
-        info.dX = velocity.x;
-        info.dY = velocity.y;
-        info.dZ = velocity.z;
-        
-        return true;
+        public bool TryShoot(out ShootInfo info)
+        {
+            info = new ShootInfo();
+            
+            if (Time.time - _lastShootTime < _shootDelay)
+                return false;
+            
+            Vector3 position = _bulletSpawnPoint.position;
+            Vector3 velocity = _bulletSpawnPoint.forward * _bulletSpeed;
+            
+            _lastShootTime = Time.time;
+            Instantiate(BulletPrefab, position, Quaternion.identity).Initialize(velocity, _damage);
+            InvokeShot();
+            
+            info.pX = position.x;
+            info.pY = position.y;
+            info.pZ = position.z;
+            
+            info.dX = velocity.x;
+            info.dY = velocity.y;
+            info.dZ = velocity.z;
+            
+            return true;
+        }
     }
 }

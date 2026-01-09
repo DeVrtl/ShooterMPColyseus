@@ -1,11 +1,16 @@
 using UnityEngine;
 
-public class EnemyGun : Gun
+namespace ShooterMP.Character.Enemy
 {
-    public void Shoot(Vector3 position, Vector3 velocity)
-    {
-        Instantiate(BulletPrefab, position, Quaternion.identity).Initialize(velocity);
+    using ShooterMP.Gun;
         
-        Shot?.Invoke();
+    public class EnemyGun : Gun
+    {
+        public void Shoot(Vector3 position, Vector3 velocity)
+        {
+            Instantiate(BulletPrefab, position, Quaternion.identity).Initialize(velocity);
+            
+            InvokeShot();
+        }
     }
 }

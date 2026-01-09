@@ -1,32 +1,59 @@
-using System;
 using UnityEngine;
+using ShooterMP.UI;
 
-public class Health : MonoBehaviour
+namespace ShooterMP.Character
 {
-    [SerializeField] private HealthUI _ui;
-    
-    private int _max;
-    private int _current;
-
-    public void SetMax(int max)
+    public class Health : MonoBehaviour
     {
-        _max = max;
-    }
+        [SerializeField] private HealthUI _ui;
+        
+        private int _max;
+        private int _current;
 
-    public void SetCurrent(int current)
-    {
-        _current = current;
-        UpdateUI();
-    }
+        public int MaxHealth => _max;
+        public int CurrentHealth => _current;
 
-    public void ApplyDamage(int damage)
-    {
-        _current -= damage;
-        UpdateUI();
-    }
+        public void SetMax(int max)
+        {
+            _max = Mathf.Max(1, max);
+            _current = Mathf.Min(_current, _max);
+            UpdateUI();
+        }
 
-    private void UpdateUI()
-    {
-        _ui.UpdateHealth(_max, _current);
+        public void SetCurrent(int current)
+        {
+            _current = Mathf.Clamp(current, 0, _max);
+            UpdateUI();
+        }
+
+        public void ApplyDamage(int damage)
+        {
+            if (damage < 0)
+            {
+                Debug.LogError($"Negative damage value: {damage}");
+                return;
+            }
+            
+            _current = Mathf.Max(0, _current - damage);
+            UpdateUI();
+        }
+
+        public void Heal(int amount)
+        {
+            if (amount < 0)
+            {
+                Debug.LogError($"Negative heal amount: {amount}");
+                return;
+            }
+            
+            _current = Mathf.Min(_max, _current + amount);
+            UpdateUI();
+        }
+
+        private void UpdateUI()
+        {
+            if (_ui != null)
+                _ui.UpdateHealth(_max, _current);
+        }
     }
 }

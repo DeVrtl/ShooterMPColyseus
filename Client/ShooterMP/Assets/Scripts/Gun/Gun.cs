@@ -1,9 +1,19 @@
 using System;
 using UnityEngine;
 
-public abstract class Gun : MonoBehaviour
+namespace ShooterMP.Gun
 {
-    [SerializeField] protected Bullet BulletPrefab;
+    using ShooterMP.Bullet;
     
-    public Action Shot;
+    public abstract class Gun : MonoBehaviour
+    {
+        [SerializeField] protected Bullet BulletPrefab;
+        
+        public event Action Shot;
+        
+        protected void InvokeShot()
+        {
+            Shot?.Invoke();
+        }
+    }
 }

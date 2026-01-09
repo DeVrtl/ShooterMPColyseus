@@ -1,17 +1,20 @@
-using System;
 using UnityEngine;
 
-public class LookAtCamera : MonoBehaviour
+namespace ShooterMP.UI
 {
-    private Transform _camera;
-
-    private void Start()
+    public class LookAtCamera : MonoBehaviour
     {
-        _camera = Camera.main.transform;
-    }
+        private Transform _camera;
 
-    private void Update()
-    {
-        transform.LookAt(_camera);
+        private void Start()
+        {
+            _camera = Camera.main.transform;
+        }
+
+        private void Update()
+        {
+            if (_camera != null)
+                transform.LookAt(_camera);
+        }
     }
 }

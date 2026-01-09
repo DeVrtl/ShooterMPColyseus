@@ -1,21 +1,24 @@
 using UnityEngine;
 
-public class SpawnPoints : MonoBehaviour
+namespace ShooterMP.Multiplayer
 {
-    [SerializeField] private Transform[] _points;
-    
-    public int Lenght => _points.Length;
-
-    public void GetPoint(int index, out Vector3 position, out Vector3 rotation)
+    public class SpawnPoints : MonoBehaviour
     {
-        if (index >= _points.Length)
-        {
-            position = Vector3.zero;
-            rotation = Vector3.zero;
-            return;
-        }
+        [SerializeField] private Transform[] _points;
         
-        position = _points[index].position;
-        rotation = _points[index].eulerAngles;
+        public int Length => _points.Length;
+
+        public void GetPoint(int index, out Vector3 position, out Vector3 rotation)
+        {
+            if (index >= _points.Length || index < 0)
+            {
+                position = Vector3.zero;
+                rotation = Vector3.zero;
+                return;
+            }
+            
+            position = _points[index].position;
+            rotation = _points[index].eulerAngles;
+        }
     }
 }

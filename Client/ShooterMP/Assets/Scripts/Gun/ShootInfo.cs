@@ -1,15 +1,18 @@
 using System;
 
-[Serializable]
-public struct ShootInfo
+namespace ShooterMP.Gun
 {
-    public string key;
-    
-    public float pX;
-    public float pY;
-    public float pZ;
+    [Serializable]
+    public struct ShootInfo
+    {
+        public string key;
+        
+        public float pX;
+        public float pY;
+        public float pZ;
 
-    public float dX;
-    public float dY;
-    public float dZ;
+        public float dX;
+        public float dY;
+        public float dZ;
+    }
 }

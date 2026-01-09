@@ -1,25 +1,27 @@
-using System;
 using UnityEngine;
 
-public class GunAnimation : MonoBehaviour
+namespace ShooterMP.Gun
 {
-    private const string Shoot = "Shoot";
-    
-    [SerializeField] private Gun _gun;
-    [SerializeField] private Animator _animator;
-    
-    private void Start()
+    public class GunAnimation : MonoBehaviour
     {
-        _gun.Shot += OnShot;
-    }
+        private const string ShootTrigger = "Shoot";
+        
+        [SerializeField] private Gun _gun;
+        [SerializeField] private Animator _animator;
+        
+        private void Start()
+        {
+            _gun.Shot += OnShot;
+        }
 
-    private void OnDestroy()
-    {
-        _gun.Shot -= OnShot;
-    }
+        private void OnDestroy()
+        {
+            _gun.Shot -= OnShot;
+        }
 
-    private void OnShot()
-    {
-        _animator.SetTrigger(Shoot);
+        private void OnShot()
+        {
+            _animator.SetTrigger(ShootTrigger);
+        }
     }
 }

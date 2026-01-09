@@ -1,38 +1,41 @@
 using System.Collections;
 using UnityEngine;
 
-public class Bullet : MonoBehaviour
+namespace ShooterMP.Bullet
 {
-    [SerializeField] private Rigidbody _rigidbody;
-    [SerializeField] private float _lifeTime = 5f;
-    
-    private int _damage;
-    
-    public void Initialize(Vector3 velocity, int damage = 0)
+    public class Bullet : MonoBehaviour
     {
-        _damage = damage;
-        _rigidbody.linearVelocity = velocity;
-        StartCoroutine(DelayDestroy());
-    }
-
-    private void OnCollisionEnter(Collision other)
-    {
-        if (other.collider.TryGetComponent(out EnemyCharacter enemy))
+        [SerializeField] private Rigidbody _rigidbody;
+        [SerializeField] private float _lifeTime = 5f;
+        
+        private int _damage;
+        
+        public void Initialize(Vector3 velocity, int damage = 0)
         {
-            enemy.ApplyDamage(_damage);
+            _damage = Mathf.Max(0, damage);
+            _rigidbody.linearVelocity = velocity;
+            StartCoroutine(DelayedDestruction());
+        }
+
+        private void OnCollisionEnter(Collision other)
+        {
+            if (other.collider.TryGetComponent(out Character.Enemy.EnemyCharacter enemy))
+            {
+                enemy.ApplyDamage(_damage);
+            }
+            
+            DestroyBullet();
+        }
+
+        private IEnumerator DelayedDestruction()
+        {
+            yield return new WaitForSecondsRealtime(_lifeTime);
+            DestroyBullet();
         }
         
-        Destroy();
-    }
-
-    private IEnumerator DelayDestroy()
-    {
-        yield return new WaitForSecondsRealtime(_lifeTime);
-        Destroy();
-    }
-    
-    private void Destroy()
-    {
-        Destroy(gameObject);
+        private void DestroyBullet()
+        {
+            Destroy(gameObject);
+        }
     }
 }

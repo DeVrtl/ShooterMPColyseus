@@ -12,6 +12,7 @@ namespace ShooterMP.Character.Player
         [SerializeField] private CanvasGroup _canvasGroup;
         [SerializeField] private float _restartDelay = 3f;
 
+        private Coroutine _respawnCoroutine;
         private Multiplayer _multiplayer;
         private bool _isRespawning = false;
         
@@ -24,11 +25,16 @@ namespace ShooterMP.Character.Player
 
         public void OnRestart(int spawnIndex)
         {
+            if (_respawnCoroutine != null)
+                StopCoroutine(_respawnCoroutine);
+            
             _multiplayer.SpawnPoints.GetPoint(spawnIndex, out Vector3 position, out Vector3 rotation);
 
             _canvasGroup.alpha = 1f;
             
-            StartCoroutine(RespawnCoroutine());
+            Debug.Log("Alpha -" + _canvasGroup.alpha);
+            
+            _respawnCoroutine = StartCoroutine(RespawnCoroutine());
 
             _playerCharacter.transform.position = position;
             rotation.x = 0;
@@ -52,6 +58,14 @@ namespace ShooterMP.Character.Player
             _multiplayer.SendMessage("move", data);
         }
 
+        public void ForceQuitRespawn()
+        {
+            StopCoroutine(_respawnCoroutine);
+            
+            _isRespawning = false;
+            _canvasGroup.alpha = 0f;
+        }
+        
         private IEnumerator RespawnCoroutine()
         {
             float elapsedTime = 0f;
@@ -59,23 +73,31 @@ namespace ShooterMP.Character.Player
             float fadeTime = 0.5f; 
     
             _isRespawning = true;
+
+            Debug.Log(1);
             
             while (elapsedTime < holdTime)
             {
                 elapsedTime += Time.deltaTime;
+                Debug.Log(2);
                 yield return null;
             }
             
             float fadeElapsed = 0f;
+            
+            Debug.Log(3);
             while (fadeElapsed < fadeTime)
             {
                 _canvasGroup.alpha = Mathf.Lerp(1f, 0f, fadeElapsed / fadeTime);
                 fadeElapsed += Time.deltaTime;
+                Debug.Log(4);
                 yield return null;
             }
     
             _isRespawning = false;
             _canvasGroup.alpha = 0f;
+            
+            Debug.Log(5);
         }
     }
 }

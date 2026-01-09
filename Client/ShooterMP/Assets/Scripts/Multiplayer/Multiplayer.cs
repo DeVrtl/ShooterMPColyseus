@@ -16,7 +16,7 @@ namespace ShooterMP.Multiplayer
         [SerializeField] private PlayerCharacter _playerPrefab;
         [SerializeField] private Spawner _spawner;
 
-        private RoomConnectionManager _connectionManager;
+        private RoomConnectionService _connectionService;
         private NetworkMessageRouter _messageRouter;
         private ColyseusRoom<State> _room;
         
@@ -24,7 +24,7 @@ namespace ShooterMP.Multiplayer
         {
             base.Awake();
             
-            _connectionManager = new RoomConnectionManager();
+            _connectionService = new RoomConnectionService();
             _messageRouter = new NetworkMessageRouter();
             
             Instance.InitializeClient();
@@ -47,7 +47,7 @@ namespace ShooterMP.Multiplayer
         {
             SpawnPoints.GetPoint(UnityEngine.Random.Range(0, SpawnPoints.Length), out Vector3 spawnPosition, out Vector3 spawnRotation);
             
-            _room = await _connectionManager.ConnectToServerAsync(
+            _room = await _connectionService.ConnectToServerAsync(
                 Instance.client,
                 spawnPosition,
                 spawnRotation,
@@ -59,7 +59,7 @@ namespace ShooterMP.Multiplayer
             _room.OnStateChange += OnStateChanged;
             _room.OnError += OnRoomError;
             
-            _messageRouter.Initialize(_room, _spawner, _connectionManager.SessionId);
+            _messageRouter.Initialize(_room, _spawner, _connectionService.SessionId);
         }
 
         private void OnRoomError(int code, string message)
@@ -69,15 +69,15 @@ namespace ShooterMP.Multiplayer
 
         public void SendMessage(string key, Dictionary<string, object> data)
         {
-            _connectionManager.SendMessage(key, data);
+            _connectionService.SendMessage(key, data);
         }
         
         public void SendMessage(string key, string data)
         {
-            _connectionManager.SendMessage(key, data);
+            _connectionService.SendMessage(key, data);
         }
 
-        public string GetSessionID() => _connectionManager.SessionId;
+        public string GetSessionID() => _connectionService.SessionId;
         
         private void OnStateChanged(State state, bool isFirstState)
         {
@@ -101,11 +101,9 @@ namespace ShooterMP.Multiplayer
             PlayerCharacter playerCharacter = _spawner.CreatePlayer(player);
             player.OnChange += playerCharacter.OnChange;
             
-            var respawnHandler = playerCharacter.GetComponent<PlayerRespawnHandler>();
-            if (respawnHandler != null)
-            {
-                _room.OnMessage<int>("Restart", respawnHandler.OnRestart);
-            }
+            PlayerRespawnHandler respawnHandler = playerCharacter.GetComponent<PlayerRespawnHandler>();
+
+            _room.OnMessage<int>("Restart", respawnHandler.OnRestart);
         }
         
         protected override void OnDestroy()
@@ -117,7 +115,7 @@ namespace ShooterMP.Multiplayer
                 _room.OnError -= OnRoomError;
             }
             
-            _connectionManager?.Disconnect();
+            _connectionService?.Disconnect();
         }
     }
 }

@@ -15,9 +15,6 @@ namespace ShooterMP.Character.Player
 
         private void Update()
         {
-            if (_respawnHandler.IsRespawning)
-                return;
-            
             ProcessInput();
             ProcessJumpInput();
             ProcessShootInput();
@@ -54,7 +51,10 @@ namespace ShooterMP.Character.Player
                 return;
             
             bool isShoot = Input.GetMouseButton(0);
-            
+
+            if (isShoot && _respawnHandler.IsRespawning)
+                _respawnHandler.ForceQuitRespawn();
+                
             if (isShoot && _gun.TryShoot(out ShootInfo shootInfo))
                 _networkSender.SendShoot(ref shootInfo);
         }

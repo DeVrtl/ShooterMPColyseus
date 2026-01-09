@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace ShooterMP.Multiplayer
 {
-    public class RoomConnectionManager
+    public class RoomConnectionService
     {
         private ColyseusClient _client;
         private ColyseusRoom<State> _room;

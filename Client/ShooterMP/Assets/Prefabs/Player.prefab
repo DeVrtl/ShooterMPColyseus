@@ -2554,6 +2554,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Player
   <MaxHealth>k__BackingField: 10
   <Speed>k__BackingField: 5
+  _playerRespawnHandler: {fileID: 7440932607462900581}
   _health: {fileID: 7613286471517566457}
   _rigidbody: {fileID: -8949682047487238907}
   _head: {fileID: 7901474546950933694}

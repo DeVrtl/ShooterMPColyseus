@@ -3,6 +3,8 @@ using UnityEngine;
 
 namespace ShooterMP.Bullet
 {
+    using ShooterMP.Character.Enemy;
+    
     public class Bullet : MonoBehaviour
     {
         [SerializeField] private Rigidbody _rigidbody;
@@ -19,7 +21,7 @@ namespace ShooterMP.Bullet
 
         private void OnCollisionEnter(Collision other)
         {
-            if (other.collider.TryGetComponent(out Character.Enemy.EnemyCharacter enemy))
+            if (other.collider.TryGetComponent(out EnemyCharacter enemy))
             {
                 enemy.ApplyDamage(_damage);
             }

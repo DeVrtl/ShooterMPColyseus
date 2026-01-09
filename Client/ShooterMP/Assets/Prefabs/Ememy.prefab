@@ -2180,6 +2180,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6651224263057237599}
+  - component: {fileID: 825714553939184833}
   - component: {fileID: 9175542610725341587}
   - component: {fileID: 8039454753767489773}
   - component: {fileID: 3201571812884914016}
@@ -2212,6 +2213,19 @@ Transform:
   - {fileID: 2760435296294157789}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &825714553939184833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8858092270827555627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b84df35fb3d67904fbd68e4c2f735664, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShooterMP.Character.Enemy.EnemyNetworkSync
+  _character: {fileID: 9175542610725341587}
 --- !u!114 &9175542610725341587
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2242,6 +2256,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyController
   _character: {fileID: 9175542610725341587}
   _gun: {fileID: 307867801666754485}
+  _networkSync: {fileID: 825714553939184833}
 --- !u!114 &3201571812884914016
 MonoBehaviour:
   m_ObjectHideFlags: 0

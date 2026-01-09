@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Colyseus;
-using ShooterMP.Character.Enemy;
 using ShooterMP.Character.Player;
-using ShooterMP.Gun;
 using ShooterMP.UI;
 using UnityEngine;
 
@@ -15,15 +13,19 @@ namespace ShooterMP.Multiplayer
         [field: SerializeField] public LossCounter LossCounter { get; private set; }
         [field: SerializeField] public SpawnPoints SpawnPoints { get; private set; }
         
-        [SerializeField] private PlayerCharacter _player;
-        [SerializeField] private EnemyController _enemy;
+        [SerializeField] private PlayerCharacter _playerPrefab;
+        [SerializeField] private Spawner _spawner;
 
-        private Dictionary<string, EnemyController> _enemies = new ();
+        private RoomConnectionManager _connectionManager;
+        private NetworkMessageRouter _messageRouter;
         private ColyseusRoom<State> _room;
         
         protected override void Awake()
         {
             base.Awake();
+            
+            _connectionManager = new RoomConnectionManager();
+            _messageRouter = new NetworkMessageRouter();
             
             Instance.InitializeClient();
             ConnectAsync();
@@ -45,40 +47,37 @@ namespace ShooterMP.Multiplayer
         {
             SpawnPoints.GetPoint(UnityEngine.Random.Range(0, SpawnPoints.Length), out Vector3 spawnPosition, out Vector3 spawnRotation);
             
-            Dictionary<string, object> data = new Dictionary<string, object>()
-            {
-                {"points", SpawnPoints.Length},
-                {"speed", _player.Speed},
-                {"hp", _player.MaxHealth},
-                {"pX", spawnPosition.x},
-                {"pY", spawnPosition.y},
-                {"pZ", spawnPosition.z},
-                {"rY", spawnRotation.y},
-            };
-            
-            _room = await Instance.client.JoinOrCreate<State>("state_handler", data);
+            _room = await _connectionManager.ConnectToServerAsync(
+                Instance.client,
+                spawnPosition,
+                spawnRotation,
+                SpawnPoints.Length,
+                _playerPrefab.Speed,
+                _playerPrefab.MaxHealth
+            );
             
             _room.OnStateChange += OnStateChanged;
             _room.OnError += OnRoomError;
-            _room.OnMessage<string>("Shoot", ApplyShoot);
+            
+            _messageRouter.Initialize(_room, _spawner, _connectionManager.SessionId);
         }
 
         private void OnRoomError(int code, string message)
         {
-            throw new Exception($"Room error [{code}]: {message}");
+            Debug.LogError($"Room error [{code}]: {message}");
         }
 
         public void SendMessage(string key, Dictionary<string, object> data)
         {
-            _room.Send(key, data);
+            _connectionManager.SendMessage(key, data);
         }
         
         public void SendMessage(string key, string data)
         {
-            _room.Send(key, data);
+            _connectionManager.SendMessage(key, data);
         }
 
-        public string GetSessionID() => _room?.SessionId;
+        public string GetSessionID() => _connectionManager.SessionId;
         
         private void OnStateChanged(State state, bool isFirstState)
         {
@@ -90,53 +89,23 @@ namespace ShooterMP.Multiplayer
                 if (key == _room.SessionId)
                     CreatePlayer(player);
                 else
-                    CreateEnemy(key, player);
+                    _spawner.CreateEnemy(key, player);
             }));
 
-            _room.State.players.OnAdd += CreateEnemy;
-            _room.State.players.OnRemove += RemoveEnemy;
+            _room.State.players.OnAdd += (key, player) => _spawner.CreateEnemy(key, player);
+            _room.State.players.OnRemove += (key, value) => _spawner.RemoveEnemy(key);
         }
 
         private void CreatePlayer(Player player)
         {
-            Vector3 position = new Vector3(player.pX, player.pY, player.pZ);
-            Quaternion rotation = Quaternion.Euler(0, player.rY, 0);
-            
-            PlayerCharacter playerCharacter = Instantiate(_player, position, rotation);
+            PlayerCharacter playerCharacter = _spawner.CreatePlayer(player);
             player.OnChange += playerCharacter.OnChange;
             
-            _room.OnMessage<int>("Restart", playerCharacter.GetComponent<PlayerInputHandler>().OnRestart);
-        }
-
-        private void CreateEnemy(string key, Player player)
-        {
-            Vector3 position = new Vector3(player.pX, player.pY, player.pZ);
-            
-            EnemyController enemy = Instantiate(_enemy, position, Quaternion.identity);
-            enemy.Initialize(key, player);
-            
-            _enemies.Add(key, enemy);
-        }
-        
-        private void RemoveEnemy(string key, Player value)
-        {
-            if (!_enemies.ContainsKey(key))
-                return;
-            
-            EnemyController enemy = _enemies[key];
-            enemy.Destroy();
-            
-            _enemies.Remove(key);
-        }
-        
-        private void ApplyShoot(string jsonShootInfo)
-        {
-            ShootInfo shootInfo = JsonUtility.FromJson<ShootInfo>(jsonShootInfo);
-            
-            if (!_enemies.ContainsKey(shootInfo.key))
-                throw new InvalidOperationException($"Received shoot from unknown enemy: {shootInfo.key}");
-            
-            _enemies[shootInfo.key].Shoot(shootInfo);
+            var respawnHandler = playerCharacter.GetComponent<PlayerRespawnHandler>();
+            if (respawnHandler != null)
+            {
+                _room.OnMessage<int>("Restart", respawnHandler.OnRestart);
+            }
         }
         
         protected override void OnDestroy()
@@ -146,8 +115,9 @@ namespace ShooterMP.Multiplayer
             if (_room != null)
             {
                 _room.OnError -= OnRoomError;
-                _room.Leave();
             }
+            
+            _connectionManager?.Disconnect();
         }
     }
 }

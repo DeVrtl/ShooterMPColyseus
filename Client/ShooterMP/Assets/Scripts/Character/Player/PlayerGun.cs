@@ -11,7 +11,7 @@ namespace ShooterMP.Character.Player
         [SerializeField] private Transform _bulletSpawnPoint;
         [SerializeField] private float _bulletSpeed = 20f;
         [SerializeField, Min(1f)] private int _fireRateRPM = 400;
-        [SerializeField] private int _damage = 1;
+        [SerializeField] private int _damage = 2;
         
         private float _shootDelay;
         private float _lastShootTime;

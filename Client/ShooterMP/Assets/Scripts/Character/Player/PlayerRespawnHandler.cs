@@ -26,7 +26,7 @@ namespace ShooterMP.Character.Player
         {
             _multiplayer.SpawnPoints.GetPoint(spawnIndex, out Vector3 position, out Vector3 rotation);
 
-            _canvasGroup.alpha = 1;
+            _canvasGroup.alpha = 1f;
             
             StartCoroutine(RespawnCoroutine());
 
@@ -55,18 +55,25 @@ namespace ShooterMP.Character.Player
         private IEnumerator RespawnCoroutine()
         {
             float elapsedTime = 0f;
-            
+            float holdTime = _restartDelay - 0.5f;
+            float fadeTime = 0.5f; 
+    
             _isRespawning = true;
             
-            while (elapsedTime < _restartDelay)
+            while (elapsedTime < holdTime)
             {
-                _canvasGroup.alpha = Mathf.MoveTowards(_canvasGroup.alpha, 0f, elapsedTime / _restartDelay);
-                
                 elapsedTime += Time.deltaTime;
-                
                 yield return null;
             }
             
+            float fadeElapsed = 0f;
+            while (fadeElapsed < fadeTime)
+            {
+                _canvasGroup.alpha = Mathf.Lerp(1f, 0f, fadeElapsed / fadeTime);
+                fadeElapsed += Time.deltaTime;
+                yield return null;
+            }
+    
             _isRespawning = false;
             _canvasGroup.alpha = 0f;
         }

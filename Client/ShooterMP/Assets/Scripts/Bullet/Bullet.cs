@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -19,14 +20,19 @@ namespace ShooterMP.Bullet
             StartCoroutine(DelayedDestruction());
         }
 
-        private void OnCollisionEnter(Collision other)
+        private void OnTriggerEnter(Collider other)
         {
-            if (other.collider.TryGetComponent(out EnemyCharacter enemy))
+            if (other.TryGetComponent(out EnemyCharacter enemy))
             {
                 enemy.ApplyDamage(_damage);
             }
             
             DestroyBullet();
+        }
+
+        private void OnCollisionEnter(Collision other)
+        {
+
         }
 
         private IEnumerator DelayedDestruction()

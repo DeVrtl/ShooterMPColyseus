@@ -20,6 +20,9 @@ namespace ShooterMP.Character.Enemy
         
         private string _sessionID;
         private float _velocityMagnitude = 0f;
+        private bool _isInvulnerable = false;
+        
+        public bool IsInvulnerable => _isInvulnerable;
         
         private void Start()
         {
@@ -68,10 +71,10 @@ namespace ShooterMP.Character.Enemy
         public void ApplyDamage(int damage)
         {
             if (damage < 0)
-            {
-                Debug.LogWarning($"Negative damage value: {damage}");
                 return;
-            }
+            
+            if (_isInvulnerable)
+                return;
             
             _health.ApplyDamage(damage);
 
@@ -114,6 +117,11 @@ namespace ShooterMP.Character.Enemy
         public void SetRotateY(float value)
         {
             TargetRotationBody = Quaternion.Euler(0f, value, 0f);
+        }
+        
+        public void SetInvulnerable(bool isInvulnerable)
+        {
+            _isInvulnerable = isInvulnerable;
         }
     }
 }

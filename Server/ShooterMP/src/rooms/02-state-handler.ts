@@ -13,6 +13,9 @@ export class Player extends Schema {
     @type("number")
     speed = 0;
 
+    @type("boolean")
+    isInvulnerable = false;
+
     @type("number")
     pX = 0;
     @type("number")
@@ -93,9 +96,22 @@ export class StateHandlerRoom extends Room<State> {
            this.broadcast("Shoot", data, {except: client}); 
         });
 
+        this.onMessage("setInvulnerable", (client, data) => {
+            const player = this.state.players.get(client.sessionId);
+            if (player) {
+                player.isInvulnerable = data.isInvulnerable;
+            }
+        });
+
         this.onMessage("damage", (client, data) => {
             const clientID = data.id;
             const player = this.state.players.get(clientID);
+
+            if (!player) 
+                return;
+
+            if (player.isInvulnerable) 
+                return;
 
             let hp = player.currentHP - data.value;
 
@@ -106,6 +122,7 @@ export class StateHandlerRoom extends Room<State> {
 
             player.loss++;
             player.currentHP = player.maxHP;
+            player.isInvulnerable = true;
 
             for(var i=0; i < this.clients.length; i++){
                 if(this.clients[i].id != clientID) 

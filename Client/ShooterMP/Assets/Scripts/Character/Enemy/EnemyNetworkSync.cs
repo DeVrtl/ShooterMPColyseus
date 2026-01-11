@@ -49,6 +49,9 @@ namespace ShooterMP.Character.Enemy
                         if ((sbyte)dataChange.Value > (sbyte)dataChange.PreviousValue)
                             _character.RestoreHP((sbyte)dataChange.Value);
                         break;
+                    case "isInvulnerable":
+                        _character.SetInvulnerable((bool)dataChange.Value);
+                        break;
                     case "pX":
                         position.x = (float)dataChange.Value;
                         break;

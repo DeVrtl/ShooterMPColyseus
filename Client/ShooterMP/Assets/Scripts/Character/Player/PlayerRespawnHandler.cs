@@ -43,7 +43,7 @@ namespace ShooterMP.Character.Player
             
             _playerCharacter.SetupInput(0, 0, 0);
             
-            Dictionary<string, object> data = new()
+            Dictionary<string, object> moveData = new()
             {
                 {"pX", position.x},
                 {"pY", position.y},
@@ -55,7 +55,9 @@ namespace ShooterMP.Character.Player
                 {"rY", rotation.y}
             };
             
-            _multiplayer.SendMessage("move", data);
+            _multiplayer.SendMessage("move", moveData);
+            
+            _multiplayer.SendMessage("setInvulnerable", GetInvulnerableData(true));
         }
 
         public void ForceQuitRespawn()
@@ -64,6 +66,8 @@ namespace ShooterMP.Character.Player
             
             _isRespawning = false;
             _canvasGroup.alpha = 0f;
+            
+            _multiplayer.SendMessage("setInvulnerable", GetInvulnerableData(false));
         }
         
         private IEnumerator RespawnCoroutine()
@@ -97,8 +101,13 @@ namespace ShooterMP.Character.Player
             _isRespawning = false;
             _canvasGroup.alpha = 0f;
             
+            _multiplayer.SendMessage("setInvulnerable", GetInvulnerableData(false));
+            
             Debug.Log(5);
         }
+
+        private Dictionary<string, object> GetInvulnerableData(bool state) =>
+            new() { ["isInvulnerable"] = state };
     }
 }
 
